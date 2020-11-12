@@ -1,0 +1,54 @@
+esphome:
+  name: sensor_bme280
+  platform: ESP8266
+  board: d1_mini
+
+wifi:
+  ssid: "IOTSlave"
+  password: "TechnoMonk9#"
+
+  manual_ip:
+    static_ip: 192.168.1.103
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+
+  ap:
+    ssid: "Esp32 Bme280 FB"
+    password: "TechnoMonk99"
+
+captive_portal:
+
+web_server:
+  port: 80
+
+# Enable logging
+logger:
+
+
+mqtt:
+  broker: 192.168.1.165
+  username: devmonk
+  password: DevMonk99
+  topic_prefix: enviro/bme280
+  reboot_timeout: 30s
+
+ota:
+
+i2c:
+  sda: D2
+  scl: D1
+  scan: True
+  id: bus_a
+
+
+sensor:
+  - platform: bme280
+    temperature:
+      name: "Temperature"
+      oversampling: 16x
+    pressure:
+      name: "Pressure"
+    humidity:
+      name: "Humidity"
+    address: 0x77
+    update_interval: 60s

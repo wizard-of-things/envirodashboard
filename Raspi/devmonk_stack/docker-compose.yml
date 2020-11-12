@@ -1,0 +1,74 @@
+version: '2'
+
+services:
+
+  portainer:
+    container_name: portainer
+    image: portainer/portainer
+    restart: unless-stopped
+    ports:
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./volumes/portainer/data:/data
+
+  influxdb:
+    container_name: influxdb
+    image: "influxdb:latest"
+    restart: unless-stopped
+    ports:
+      - 8086:8086
+    env_file:
+      - ./setup/influxdb/influxdb.env
+    volumes:
+      - ./volumes/influxdb/data:/var/lib/influxdb
+
+  mosquitto:
+    container_name: mosquitto
+    image: eclipse-mosquitto
+    restart: unless-stopped
+    user: "1883"
+    ports:
+      - 1883:1883
+      - 9001:9001
+    volumes:
+      - ./volumes/mosquitto/data:/mosquitto/data
+      - ./volumes/mosquitto/log:/mosquitto/log
+      - ./volumes/mosquitto/conf:/mosquitto/conf
+      - ./setup/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:6.3.6
+    restart: unless-stopped
+    user: "0"
+    ports:
+      - 3000:3000
+    env_file:
+      - ./setup/grafana/grafana.env
+    volumes:
+      - ./volumes/grafana/data:/var/lib/grafana
+      - ./volumes/grafana/log:/var/log/grafana
+
+  nodered:
+    container_name: nodered
+    build: ./setup/nodered/.
+    restart: unless-stopped
+    user: "0"
+    privileged: true
+    env_file: ./setup/nodered/nodered.env
+    ports:
+      - 1880:1880
+    volumes:
+      - ./volumes/nodered/data:/data
+
+  mqttinfluxdbbridge:
+    container_name: mqttinfluxdbbridge
+    build: ./mqttinfluxdbbridge
+    image: devmonk/mqttinfluxdbbridge
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+      - influxdb
+
